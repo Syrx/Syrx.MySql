@@ -11,10 +11,10 @@
 		<PackageProjectUrl>https://github.com/Syrx/</PackageProjectUrl>
 		<PackageIconUrl></PackageIconUrl>
 		<RepositoryUrl>https://github.com/Syrx/</RepositoryUrl>
-		<Description>This package provides Syrx support for MySQL databases.</Description>
+		<Description>This package provides support for MySql connections by implementing a MySqlDatabaseConnector for the Syrx IDatabaseConnector. </Description>
 		<PackageReleaseNotes>
+			BREAKING CHANGE: Changed namespace.
 			Updated to .NET8.0.
-			Try using the new Syrx.MySql.Extensions to simplify wiring up and configuration!
 		</PackageReleaseNotes>
 		<PackageTags>syrx;data access;dapper;orm;micro-orm;mysql;my-sql</PackageTags>
 	</PropertyGroup>
@@ -28,7 +28,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Syrx.Commanders.Databases" Version="2.1.0" />
 	</ItemGroup>
 
 	<PropertyGroup>
@@ -36,7 +35,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Syrx.Commanders.Databases.Connectors.MySql\Syrx.Commanders.Databases.Connectors.MySql.csproj" />
+		<PackageReference Include="MySqlConnector" Version="2.4.0" />
+		<PackageReference Include="Syrx.Commanders.Databases.Connectors" Version="2.1.0" />
 	</ItemGroup>
 
-</Project>
+<!----></Project>
