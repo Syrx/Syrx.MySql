@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<Description>This package hosts extension methods to make wiring up support for MySQL databases simpler and easier. </Description>
+		<PackageTags>syrx;data access;dapper;orm;micro-orm;mysql;my-sql</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Syrx.Commanders.Databases.Connectors.MySql.Extensions\Syrx.Commanders.Databases.Connectors.MySql.Extensions.csproj" />
+		<ProjectReference Include="..\Syrx.MySql\Syrx.MySql.csproj" />
+	</ItemGroup>
+
+</Project>
