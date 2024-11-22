@@ -689,6 +689,8 @@ select @Name
 
         }
 
+        public const string NullModelThrowsArgumentNullException = "select 1;";
+
         public static class Dispose
         {
 
