@@ -6,7 +6,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="MySqlConnector" Version="2.4.0" />
-		<PackageReference Include="Syrx.Commanders.Databases.Connectors" Version="2.*" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\.submodules\Syrx.Commanders.Databases\src\Syrx.Commanders.Databases.Connectors\Syrx.Commanders.Databases.Connectors.csproj" />
 	</ItemGroup>
 
 </Project>

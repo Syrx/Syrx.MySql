@@ -1,10 +1,10 @@
 ﻿namespace Syrx.Commanders.Databases.Connectors.MySql.Extensions.Tests.Unit.MySqlDatabaseConnectorExtensionsTests
 {
-    public class UseSqlServer
+    public class UseMySql
     {
         private IServiceCollection _services;
 
-        public UseSqlServer()
+        public UseMySql()
         {
             _services = new ServiceCollection();
         }
@@ -15,7 +15,7 @@
             _services.UseSyrx(a => a
                 .UseMySql(b => b
                     .AddCommand(c => c
-                        .ForType<UseSqlServer>(d => d
+                        .ForType<UseMySql>(d => d
                             .ForMethod(nameof(Successful), e => e.UseCommandText("test-command").UseConnectionAlias("test-aliase"))))));
 
             var provider = _services.BuildServiceProvider();

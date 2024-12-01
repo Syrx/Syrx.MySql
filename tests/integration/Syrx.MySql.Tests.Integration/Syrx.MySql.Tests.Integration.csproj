@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -25,10 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\.submodules\Syrx.Commanders.Databases\tests\integration\Syrx.Commanders.Databases.Tests.Integration.Models\Syrx.Commanders.Databases.Tests.Integration.Models.csproj" />
+    <ProjectReference Include="..\..\..\.submodules\Syrx.Commanders.Databases\tests\integration\Syrx.Commanders.Databases.Tests.Integration\Syrx.Commanders.Databases.Tests.Integration.csproj" />
+    <ProjectReference Include="..\..\..\.submodules\Syrx.Commanders.Databases\tests\unit\Syrx.Commanders.Databases.Tests.Extensions\Syrx.Commanders.Databases.Tests.Extensions.csproj" />
     <ProjectReference Include="..\..\..\src\Syrx.MySql.Extensions\Syrx.MySql.Extensions.csproj" />
     <ProjectReference Include="..\..\..\src\Syrx.MySql\Syrx.MySql.csproj" />
-    <ProjectReference Include="..\..\unit\Syrx.Tests.Extensions\Syrx.Tests.Extensions.csproj" />
-    <ProjectReference Include="..\Syrx.Commanders.Databases.Tests.Integration.Models\Syrx.Commanders.Databases.Tests.Integration.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>
