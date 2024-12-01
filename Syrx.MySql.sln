@@ -80,8 +80,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syrx.Readers", ".submodules
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syrx.Settings", ".submodules\Syrx.Commanders.Databases\.submodules\Syrx\src\Syrx.Settings\Syrx.Settings.csproj", "{5ED3EF9C-014A-498A-A392-BAF46D86A765}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syrx.Tests.Extensions", ".submodules\Syrx.Commanders.Databases\.submodules\Syrx\tests\unit\Syrx.Tests.Extensions\Syrx.Tests.Extensions.csproj", "{CEC89EFE-C5E8-4552-9C64-30F70863E090}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syrx.Commanders.Databases", ".submodules\Syrx.Commanders.Databases\src\Syrx.Commanders.Databases\Syrx.Commanders.Databases.csproj", "{D5E25781-B8CE-487E-AE47-5C9E15AD57AC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Syrx.Commanders.Databases.Builders", ".submodules\Syrx.Commanders.Databases\src\Syrx.Commanders.Databases.Builders\Syrx.Commanders.Databases.Builders.csproj", "{8AD97DBF-7E8D-4025-A0EC-6F84BC7CF673}"
@@ -186,10 +184,6 @@ Global
 		{5ED3EF9C-014A-498A-A392-BAF46D86A765}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5ED3EF9C-014A-498A-A392-BAF46D86A765}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5ED3EF9C-014A-498A-A392-BAF46D86A765}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CEC89EFE-C5E8-4552-9C64-30F70863E090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CEC89EFE-C5E8-4552-9C64-30F70863E090}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CEC89EFE-C5E8-4552-9C64-30F70863E090}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CEC89EFE-C5E8-4552-9C64-30F70863E090}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D5E25781-B8CE-487E-AE47-5C9E15AD57AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D5E25781-B8CE-487E-AE47-5C9E15AD57AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5E25781-B8CE-487E-AE47-5C9E15AD57AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -321,7 +315,6 @@ Global
 		{90B7B725-93FE-4D46-AFE2-33C6D7BEB44C} = {733C0799-2956-4A3A-BC22-26D66359E401}
 		{7CB3F267-3ECA-4C79-A608-0861690696F8} = {733C0799-2956-4A3A-BC22-26D66359E401}
 		{5ED3EF9C-014A-498A-A392-BAF46D86A765} = {733C0799-2956-4A3A-BC22-26D66359E401}
-		{CEC89EFE-C5E8-4552-9C64-30F70863E090} = {14938855-8F35-4F3F-9965-6E0835BD5C70}
 		{D5E25781-B8CE-487E-AE47-5C9E15AD57AC} = {23159260-CE6F-4F9A-B29A-585FBC457C63}
 		{8AD97DBF-7E8D-4025-A0EC-6F84BC7CF673} = {23159260-CE6F-4F9A-B29A-585FBC457C63}
 		{6172EAD0-E248-450A-945B-6663CFFC1E24} = {23159260-CE6F-4F9A-B29A-585FBC457C63}
