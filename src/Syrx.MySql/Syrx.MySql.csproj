@@ -3,11 +3,9 @@
 		<Description>This package provides Syrx support for MySQL databases.</Description>
 		<PackageTags>syrx;data access;dapper;orm;micro-orm;mysql;my-sql</PackageTags>
 	</PropertyGroup>
+		
 	<ItemGroup>
-	  <PackageReference Include="Syrx.Commanders.Databases" Version="2.*" />
-	</ItemGroup>
-	
-	<ItemGroup>
+		<ProjectReference Include="..\..\.submodules\Syrx.Commanders.Databases\src\Syrx.Commanders.Databases\Syrx.Commanders.Databases.csproj" />
 		<ProjectReference Include="..\Syrx.Commanders.Databases.Connectors.MySql\Syrx.Commanders.Databases.Connectors.MySql.csproj" />
 	</ItemGroup>
 

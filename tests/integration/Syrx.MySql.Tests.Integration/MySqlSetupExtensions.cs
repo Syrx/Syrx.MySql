@@ -280,11 +280,7 @@
                     nameof(Execute.SingleType), d => d
                     .UseConnectionAlias(MySqlCommandStrings.Alias)
                     .UseCommandText(MySqlCommandStrings.Execute.SingleType))
-                .ForMethod(
-                    nameof(Execute.NullModelThrowsArgumentNullException), d => d
-                    .UseConnectionAlias(MySqlCommandStrings.Alias)
-                    .UseCommandText(MySqlCommandStrings.NullModelThrowsArgumentNullException)
-                )));
+                ));
         }
 
         public static CommanderSettingsBuilder AddDisposeCommands(this CommanderSettingsBuilder builder)
