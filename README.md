@@ -14,9 +14,7 @@ This project provides Syrx support for MySql. The overall experience of using [S
 |Package Reference|```<PackageReference Include="Syrx.MySql.Extensions" Version="2.4.0" />```|
 |Paket CLI|```paket add Syrx.MySql.Extensions --version 2.4.0```|
 
-However, if you don't need the configuration options, you can install the standalone Oracle package. 
-
-Standalone installation of the package is via [nuget](https://www.nuget.org/packages/Syrx.MySql/). However we recommend installing the extensions package. 
+However, if you don't need the configuration options, you can install the standalone package via [nuget](https://www.nuget.org/packages/Syrx.MySql/).
 
 |Source|Command|
 |--|--|
