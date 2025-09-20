@@ -2,6 +2,36 @@
 
 Dependency injection extensions for Syrx MySQL database connectors.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Key Extensions](#key-extensions)
+  - [ServiceCollectionExtensions](#servicecollectionextensions)
+  - [MySqlConnectorExtensions](#mysqlconnectorextensions)
+- [Usage](#usage)
+  - [Basic Registration](#basic-registration)
+  - [Custom Lifetime](#custom-lifetime)
+  - [Advanced Configuration](#advanced-configuration)
+- [Service Registration Details](#service-registration-details)
+- [Service Lifetimes](#service-lifetimes)
+  - [Lifetime Recommendations](#lifetime-recommendations)
+- [Registration Process](#registration-process)
+- [Integration with Other Extensions](#integration-with-other-extensions)
+- [MySQL-Specific Configuration](#mysql-specific-configuration)
+  - [Connection Pool Management](#connection-pool-management)
+  - [Master/Slave Configuration](#masterslave-configuration)
+  - [SSL Configuration](#ssl-configuration)
+- [Error Handling](#error-handling)
+- [Testing Support](#testing-support)
+- [Performance Optimizations](#performance-optimizations)
+  - [Connection String Optimization](#connection-string-optimization)
+  - [Bulk Operation Configuration](#bulk-operation-configuration)
+- [Related Packages](#related-packages)
+- [License](#license)
+- [Credits](#credits)
+
 ## Overview
 
 `Syrx.Commanders.Databases.Connectors.MySql.Extensions` provides dependency injection and service registration extensions specifically for MySQL database connectors in the Syrx framework. This package enables easy registration of MySQL connectors with DI containers.

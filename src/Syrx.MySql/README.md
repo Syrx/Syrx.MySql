@@ -2,6 +2,31 @@
 
 MySQL database provider for the Syrx data access framework.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [1. Configure Services](#1-configure-services)
+  - [2. Create Repository](#2-create-repository)
+  - [3. Use in Controllers/Services](#3-use-in-controllersservices)
+- [Configuration](#configuration)
+  - [Connection Strings](#connection-strings)
+  - [Command Configuration](#command-configuration)
+- [Multi-map Queries](#multi-map-queries)
+- [Transaction Management](#transaction-management)
+- [Connection String Requirements](#connection-string-requirements)
+- [MySQL-Specific Features](#mysql-specific-features)
+  - [Auto-Increment Handling](#auto-increment-handling)
+  - [Stored Procedures](#stored-procedures)
+  - [JSON Column Support](#json-column-support)
+- [Performance Tips](#performance-tips)
+- [Connection Pool Configuration](#connection-pool-configuration)
+- [Related Packages](#related-packages)
+- [License](#license)
+- [Credits](#credits)
+
 ## Overview
 
 `Syrx.MySql` provides MySQL database support for Syrx applications. This package enables you to use Syrx's powerful data access patterns with MySQL databases, leveraging the performance and flexibility of Dapper underneath with MySqlConnector.

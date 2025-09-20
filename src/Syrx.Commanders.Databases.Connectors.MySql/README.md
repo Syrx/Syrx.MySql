@@ -2,6 +2,35 @@
 
 MySQL database connector implementation for the Syrx data access framework.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Architecture](#architecture)
+- [Key Components](#key-components)
+  - [MySqlDatabaseConnector](#mysqldatabaseconnector)
+  - [Connection Creation Process](#connection-creation-process)
+- [Usage](#usage)
+- [Connection String Support](#connection-string-support)
+  - [Basic Authentication](#basic-authentication)
+  - [With Port Specification](#with-port-specification)
+  - [SSL/TLS Connections](#ssltls-connections)
+  - [Connection Pooling](#connection-pooling)
+  - [Cloud MySQL (AWS RDS)](#cloud-mysql-aws-rds)
+- [Configuration Requirements](#configuration-requirements)
+- [Error Handling](#error-handling)
+- [Performance Considerations](#performance-considerations)
+- [MySqlConnector Benefits](#mysqlconnector-benefits)
+- [Connection Pool Configuration](#connection-pool-configuration)
+- [MySQL-Specific Features](#mysql-specific-features)
+  - [Character Set Support](#character-set-support)
+  - [Time Zone Handling](#time-zone-handling)
+  - [SSL Configuration](#ssl-configuration)
+- [Related Packages](#related-packages)
+- [License](#license)
+- [Credits](#credits)
+
 ## Overview
 
 `Syrx.Commanders.Databases.Connectors.MySql` provides the low-level MySQL database connector implementation for Syrx. This package contains the core connector logic that manages MySQL database connections using MySqlConnector.
