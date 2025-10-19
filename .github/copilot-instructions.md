@@ -270,7 +270,7 @@ Server=server;Database=db;Uid=user;Pwd=pass;SslMode=Required;SslCert=cert.pem;Ss
 - Each project MUST have a comprehensive README.md suitable for NuGet
 - Include MySQL-specific examples and connection string formats
 - Provide installation instructions and usage examples
-- Reference version 2.4.3 (current version from Directory.Build.props)
+- Reference version 3.0.0 (current version from Directory.Build.props)
 
 ### XML Documentation
 - All public APIs require comprehensive XML docs

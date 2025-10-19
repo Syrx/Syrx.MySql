@@ -58,7 +58,7 @@ Install-Package Syrx.Commanders.Databases.Connectors.MySql
 
 **PackageReference**
 ```xml
-<PackageReference Include="Syrx.Commanders.Databases.Connectors.MySql" Version="2.4.5" />
+<PackageReference Include="Syrx.Commanders.Databases.Connectors.MySql" Version="3.0.0" />
 ```
 
 ## Architecture

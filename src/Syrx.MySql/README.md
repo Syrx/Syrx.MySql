@@ -61,8 +61,8 @@ Install-Package Syrx.MySql
 
 **PackageReference**
 ```xml
-<PackageReference Include="Syrx.MySql.Extensions" Version="2.4.5" />
-<PackageReference Include="Syrx.MySql" Version="2.4.5" />
+<PackageReference Include="Syrx.MySql.Extensions" Version="3.0.0" />
+<PackageReference Include="Syrx.MySql" Version="3.0.0" />
 ```
 
 ## Quick Start
