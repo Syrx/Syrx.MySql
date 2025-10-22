@@ -75,9 +75,13 @@ jobs:
       with: 
         submodules: recursive
     - name: Setup .NET ${{ matrix.dotnet-version }}
-      
-
       uses: actions/setup-dotnet@v5
+      
+    - name: Build custom MySQL Docker image for tests
+      run: |
+        cd tests/integration/Syrx.MySql.Tests.Integration/Docker
+        docker build -t docker-syrx-mysql-test:latest .
+        
     - name: Run tests
       run: dotnet test --configuration Release
 
