@@ -1,52 +1,44 @@
-﻿using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Containers;
-using MySqlConnector;
+﻿using MySqlConnector;
 using Dapper;
 
 namespace Syrx.MySql.Tests.Integration
 {
     public class MySqlFixture : Fixture, IAsyncLifetime
     {
-        private readonly IContainer _container;
         private string _connectionString;
+        private readonly bool _useWorkflowManagedMySQL;
 
         /// <summary>
-        /// Initializes MySQL test fixture with robust container readiness detection.
-        /// Uses raw container approach to avoid MySqlBuilder complexities in CI.
+        /// Initializes MySQL test fixture.
+        /// Uses workflow-managed MySQL service in CI, falls back to local MySQL for development.
         /// </summary>
         public MySqlFixture()
         {
-            var logger = LoggerFactory.Create(b => b
-                .AddConsole()
-                .AddSystemdConsole()
-                .AddSimpleConsole()).CreateLogger<MySqlFixture>();
-
-            _container = new ContainerBuilder()
-                .WithImage("docker-syrx-mysql-test:latest")
-                .WithEnvironment("MYSQL_DATABASE", "syrx")
-                .WithEnvironment("MYSQL_USER", "syrx_user")
-                .WithEnvironment("MYSQL_PASSWORD", "YourStrong!Passw0rd")
-                .WithEnvironment("MYSQL_ROOT_PASSWORD", "YourStrong!Passw0rd")
-                .WithPortBinding(3306, true)
-                .WithLogger(logger)
-                .Build();
+            // Check if we're running in GitHub Actions with a managed MySQL service
+            _useWorkflowManagedMySQL = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
+            
+            if (_useWorkflowManagedMySQL)
+            {
+                // Use the workflow-managed MySQL service
+                _connectionString = "Server=127.0.0.1;Port=3306;Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
+                Console.WriteLine("Using workflow-managed MySQL service");
+            }
+            else
+            {
+                // For local development, you'll need a local MySQL instance
+                _connectionString = "Server=localhost;Port=3306;Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
+                Console.WriteLine("Using local MySQL instance for development");
+            }
         }
 
         public async Task DisposeAsync()
         {
-            await _container.DisposeAsync();
+            // Nothing to dispose - workflow manages the MySQL service
+            await Task.CompletedTask;
         }
 
         public async Task InitializeAsync()
         {
-            // Start the container
-            Console.WriteLine("Starting MySQL container...");
-            await _container.StartAsync();
-            Console.WriteLine($"Container started. ID: {_container.Id}, State: {_container.State}");
-            
-            // Build connection string manually
-            var port = _container.GetMappedPublicPort(3306);
-            _connectionString = $"Server=127.0.0.1;Port={port};Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
             Console.WriteLine($"Connection string: {_connectionString}");
             
             // Wait for MySQL to be fully ready with connection verification
@@ -77,10 +69,17 @@ namespace Syrx.MySql.Tests.Integration
 
         private async Task WaitForMySqlReadyAsync()
         {
-            // Start with a longer initial delay for container startup
-            await Task.Delay(TimeSpan.FromSeconds(15));
+            // Shorter delay since workflow handles MySQL readiness
+            if (_useWorkflowManagedMySQL)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5)); // Workflow should have MySQL ready
+            }
+            else
+            {
+                await Task.Delay(TimeSpan.FromSeconds(15)); // Local dev might need more time
+            }
             
-            var maxAttempts = 120; // 10 minutes total
+            var maxAttempts = _useWorkflowManagedMySQL ? 30 : 120; // Less attempts needed for workflow-managed
             var delayBetweenAttempts = TimeSpan.FromSeconds(5);
             
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
