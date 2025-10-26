@@ -25,7 +25,8 @@ namespace Syrx.MySql.Tests.Integration
                 .WithPortBinding(3306, true)
                 .WithWaitStrategy(Wait.ForUnixContainer()
                     .UntilInternalTcpPortIsAvailable(3306)
-                    .UntilCommandIsCompleted("/bin/sh", "-c", "until mysqladmin ping -h localhost --silent; do sleep 1; done"))
+                    .UntilCommandIsCompleted("mysqladmin", "ping", "-h", "localhost", "-u", "syrx_user", "-pYourStrong!Passw0rd", "--silent")
+                    .UntilCommandIsCompleted("/bin/sh", "-c", "sleep 10")) // Extra wait to ensure stability
                 .WithLogger(_logger)
     .WithStartupCallback((container, token) =>
     {
