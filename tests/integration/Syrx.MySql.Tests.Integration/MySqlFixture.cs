@@ -6,6 +6,10 @@ namespace Syrx.MySql.Tests.Integration
     {
         private readonly MySqlContainer _container;
 
+        /// <summary>
+        /// Initializes MySQL test fixture with robust container readiness detection.
+        /// Uses combined TCP port check + mysqladmin ping to prevent "container is not running" errors.
+        /// </summary>
         public MySqlFixture()
         {
             var _logger = LoggerFactory.Create(b => b
