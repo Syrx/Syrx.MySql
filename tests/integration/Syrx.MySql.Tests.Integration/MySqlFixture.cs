@@ -28,9 +28,6 @@ namespace Syrx.MySql.Tests.Integration
                 .WithEnvironment("MYSQL_PASSWORD", "YourStrong!Passw0rd")
                 .WithEnvironment("MYSQL_ROOT_PASSWORD", "YourStrong!Passw0rd")
                 .WithPortBinding(3306, true)
-                .WithWaitStrategy(Wait.ForUnixContainer()
-                    .UntilInternalTcpPortIsAvailable(3306)
-                    .UntilCommandIsCompleted("mysqladmin", "ping", "-h", "localhost", "--silent"))
                 .WithLogger(logger)
                 .Build();
         }
@@ -43,14 +40,19 @@ namespace Syrx.MySql.Tests.Integration
         public async Task InitializeAsync()
         {
             // Start the container
+            Console.WriteLine("Starting MySQL container...");
             await _container.StartAsync();
+            Console.WriteLine($"Container started. ID: {_container.Id}, State: {_container.State}");
             
             // Build connection string manually
             var port = _container.GetMappedPublicPort(3306);
             _connectionString = $"Server=127.0.0.1;Port={port};Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
+            Console.WriteLine($"Connection string: {_connectionString}");
             
             // Wait for MySQL to be fully ready with connection verification
+            Console.WriteLine("Starting connection verification...");
             await WaitForMySqlReadyAsync();
+            Console.WriteLine("MySQL is ready!");
             
             var alias = "Syrx.MySql";
 
@@ -75,20 +77,26 @@ namespace Syrx.MySql.Tests.Integration
 
         private async Task WaitForMySqlReadyAsync()
         {
-            var maxAttempts = 60; // 5 minutes total
+            // Start with a longer initial delay for container startup
+            await Task.Delay(TimeSpan.FromSeconds(15));
+            
+            var maxAttempts = 120; // 10 minutes total
             var delayBetweenAttempts = TimeSpan.FromSeconds(5);
             
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
                 try
                 {
+                    Console.WriteLine($"Connection attempt {attempt}/{maxAttempts}...");
                     using var connection = new MySqlConnection(_connectionString);
                     await connection.OpenAsync();
                     await connection.ExecuteScalarAsync("SELECT 1");
+                    Console.WriteLine($"Connection successful on attempt {attempt}");
                     return; // Connection successful
                 }
-                catch (Exception) when (attempt < maxAttempts)
+                catch (Exception ex) when (attempt < maxAttempts)
                 {
+                    Console.WriteLine($"Connection attempt {attempt} failed: {ex.Message}");
                     await Task.Delay(delayBetweenAttempts);
                 }
             }
