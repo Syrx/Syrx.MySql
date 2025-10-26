@@ -1,31 +1,37 @@
 ﻿using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
+using MySqlConnector;
+using Dapper;
 
 namespace Syrx.MySql.Tests.Integration
 {
     public class MySqlFixture : Fixture, IAsyncLifetime
     {
-        private readonly MySqlContainer _container;
+        private readonly IContainer _container;
+        private string _connectionString;
 
         /// <summary>
         /// Initializes MySQL test fixture with robust container readiness detection.
-        /// Uses combined TCP port check + mysqladmin ping to prevent "container is not running" errors.
+        /// Uses raw container approach to avoid MySqlBuilder complexities in CI.
         /// </summary>
         public MySqlFixture()
         {
-            var _logger = LoggerFactory.Create(b => b
+            var logger = LoggerFactory.Create(b => b
                 .AddConsole()
                 .AddSystemdConsole()
                 .AddSimpleConsole()).CreateLogger<MySqlFixture>();
 
-            _container = new MySqlBuilder()
+            _container = new ContainerBuilder()
                 .WithImage("docker-syrx-mysql-test:latest")
-                .WithDatabase("syrx")
-                .WithUsername("syrx_user")
-                .WithPassword("YourStrong!Passw0rd")
+                .WithEnvironment("MYSQL_DATABASE", "syrx")
+                .WithEnvironment("MYSQL_USER", "syrx_user")
+                .WithEnvironment("MYSQL_PASSWORD", "YourStrong!Passw0rd")
+                .WithEnvironment("MYSQL_ROOT_PASSWORD", "YourStrong!Passw0rd")
                 .WithPortBinding(3306, true)
                 .WithWaitStrategy(Wait.ForUnixContainer()
-                    .UntilInternalTcpPortIsAvailable(3306))
-                .WithLogger(_logger)
+                    .UntilInternalTcpPortIsAvailable(3306)
+                    .UntilCommandIsCompleted("mysqladmin", "ping", "-h", "localhost", "--silent"))
+                .WithLogger(logger)
                 .Build();
         }
 
@@ -39,12 +45,16 @@ namespace Syrx.MySql.Tests.Integration
             // Start the container
             await _container.StartAsync();
             
-            var connectionString = _container.GetConnectionString();
-            // Add Allow User Variables to support MySQL user variables in stored procedures
-            connectionString += ";Allow User Variables=true";
+            // Build connection string manually
+            var port = _container.GetMappedPublicPort(3306);
+            _connectionString = $"Server=127.0.0.1;Port={port};Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
+            
+            // Wait for MySQL to be fully ready with connection verification
+            await WaitForMySqlReadyAsync();
+            
             var alias = "Syrx.MySql";
 
-            Install(() => Installer.Install(alias, connectionString));
+            Install(() => Installer.Install(alias, _connectionString));
             Installer.SetupDatabase(base.ResolveCommander<DatabaseBuilder>());
 
             // set assertion messages for those that change between RDBMS implementations. 
@@ -61,6 +71,29 @@ namespace Syrx.MySql.Tests.Integration
 
 
             await Task.CompletedTask;
+        }
+
+        private async Task WaitForMySqlReadyAsync()
+        {
+            var maxAttempts = 60; // 5 minutes total
+            var delayBetweenAttempts = TimeSpan.FromSeconds(5);
+            
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    using var connection = new MySqlConnection(_connectionString);
+                    await connection.OpenAsync();
+                    await connection.ExecuteScalarAsync("SELECT 1");
+                    return; // Connection successful
+                }
+                catch (Exception) when (attempt < maxAttempts)
+                {
+                    await Task.Delay(delayBetweenAttempts);
+                }
+            }
+            
+            throw new InvalidOperationException("MySQL container did not become ready within the expected time.");
         }
 
     }
