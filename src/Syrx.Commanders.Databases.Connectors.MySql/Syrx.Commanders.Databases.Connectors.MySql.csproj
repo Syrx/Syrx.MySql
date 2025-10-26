@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<Description>This package provides support for MySql connections by implementing a MySqlDatabaseConnector for the Syrx IDatabaseConnector. </Description>
 		<PackageTags>syrx;data access;dapper;orm;micro-orm;mysql;my-sql</PackageTags>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -11,5 +12,6 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\.submodules\Syrx.Commanders.Databases\src\Syrx.Commanders.Databases.Connectors\Syrx.Commanders.Databases.Connectors.csproj" />
 	</ItemGroup>
+
 
 </Project>

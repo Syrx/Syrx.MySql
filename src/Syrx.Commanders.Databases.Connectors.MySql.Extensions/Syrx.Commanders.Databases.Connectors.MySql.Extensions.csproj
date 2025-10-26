@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<Description>This package host extension methods to simplify the wiring up and dependency injection of MySql support using the IServiceCollection. </Description>
 		<PackageTags>syrx;data access;dapper;orm;micro-orm;mysql;my-sql</PackageTags>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -11,6 +12,10 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\.submodules\Syrx.Commanders.Databases\src\Syrx.Commanders.Databases.Extensions\Syrx.Commanders.Databases.Extensions.csproj" />
 		<ProjectReference Include="..\Syrx.Commanders.Databases.Connectors.MySql\Syrx.Commanders.Databases.Connectors.MySql.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.39" />
 	</ItemGroup>
 
 </Project>
