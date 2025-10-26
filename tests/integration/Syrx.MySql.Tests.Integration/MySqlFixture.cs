@@ -24,39 +24,9 @@ namespace Syrx.MySql.Tests.Integration
                 .WithPassword("YourStrong!Passw0rd")
                 .WithPortBinding(3306, true)
                 .WithWaitStrategy(Wait.ForUnixContainer()
-                    .UntilInternalTcpPortIsAvailable(3306)
-                    .UntilCommandIsCompleted("mysqladmin", "ping", "-h", "localhost", "-u", "syrx_user", "-pYourStrong!Passw0rd", "--silent")
-                    .UntilCommandIsCompleted("/bin/sh", "-c", "sleep 10")) // Extra wait to ensure stability
+                    .UntilInternalTcpPortIsAvailable(3306))
                 .WithLogger(_logger)
-    .WithStartupCallback((container, token) =>
-    {
-        var message = @$"{new string('=', 150)}
-Syrx: {nameof(MySqlContainer)} startup callback. Container details:
-{new string('=', 150)}
-Name ............. : {container.Name}
-Id ............... : {container.Id}
-State ............ : {container.State}
-Health ........... : {container.Health}
-CreatedTime ...... : {container.CreatedTime}
-StartedTime ...... : {container.StartedTime}
-Hostname ......... : {container.Hostname}
-Image.Digest ..... : {container.Image.Digest}
-Image.FullName ... : {container.Image.FullName}
-Image.Registry ... : {container.Image.Registry}
-Image.Repository . : {container.Image.Repository}
-Image.Tag ........ : {container.Image.Tag}
-IpAddress ........ : {container.IpAddress}
-MacAddress ....... : {container.MacAddress}
-ConnectionString . : {container.GetConnectionString()}
-{new string('=', 150)}
-";
-        container.Logger.LogInformation(message);
-        return Task.CompletedTask;
-    }).Build();
-
-
-            // start
-            _container.StartAsync().Wait();
+                .Build();
         }
 
         public async Task DisposeAsync()
@@ -66,6 +36,9 @@ ConnectionString . : {container.GetConnectionString()}
 
         public async Task InitializeAsync()
         {
+            // Start the container
+            await _container.StartAsync();
+            
             var connectionString = _container.GetConnectionString();
             // Add Allow User Variables to support MySQL user variables in stored procedures
             connectionString += ";Allow User Variables=true";
