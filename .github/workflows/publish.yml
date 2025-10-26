@@ -101,15 +101,20 @@ jobs:
       
     - name: Wait for MySQL to be ready
       run: |
-        echo "Waiting for MySQL to be ready..."
-        for i in {1..30}; do
-          if mysqladmin ping -h 127.0.0.1 -P 3306 -u syrx_user -pYourStrong!Passw0rd --silent; then
-            echo "MySQL is ready!"
-            break
-          fi
-          echo "Attempt $i: MySQL not ready yet, waiting..."
-          sleep 2
-        done
+        Write-Host "Waiting for MySQL to be ready..."
+        for ($i = 1; $i -le 30; $i++) {
+          try {
+            mysqladmin ping -h 127.0.0.1 -P 3306 -u syrx_user -pYourStrong!Passw0rd --silent
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "MySQL is ready!"
+              break
+            }
+          } catch {
+            # Continue with the loop
+          }
+          Write-Host "Attempt $i`: MySQL not ready yet, waiting..."
+          Start-Sleep -Seconds 2
+        }
         
     - name: Setup MySQL database schema
       run: |
@@ -117,13 +122,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y mysql-client
         
-        # Run our initialization scripts
-        for script in tests/integration/Syrx.MySql.Tests.Integration/Docker/init-scripts/*.sql; do
-          if [ -f "$script" ]; then
-            echo "Running script: $script"
-            mysql -h 127.0.0.1 -P 3306 -u syrx_user -pYourStrong!Passw0rd syrx < "$script"
-          fi
-        done
+        # Run our initialization scripts in order
+        $scriptPath = "tests/integration/Syrx.MySql.Tests.Integration/Docker/init-scripts"
+        if (Test-Path $scriptPath) {
+          Get-ChildItem -Path $scriptPath -Filter "*.sql" | Sort-Object Name | ForEach-Object {
+            Write-Host "Running script: $($_.Name)"
+            Get-Content $_.FullName | mysql -h 127.0.0.1 -P 3306 -u syrx_user -pYourStrong!Passw0rd syrx
+          }
+        }
         
     - name: Run tests
       run: dotnet test --configuration Release
