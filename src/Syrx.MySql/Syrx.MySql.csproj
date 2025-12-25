@@ -2,11 +2,16 @@
 	<PropertyGroup>
 		<Description>This package provides Syrx support for MySQL databases.</Description>
 		<PackageTags>syrx;data access;dapper;orm;micro-orm;mysql;my-sql</PackageTags>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
 		
 	<ItemGroup>
 		<ProjectReference Include="..\..\.submodules\Syrx.Commanders.Databases\src\Syrx.Commanders.Databases\Syrx.Commanders.Databases.csproj" />
 		<ProjectReference Include="..\Syrx.Commanders.Databases.Connectors.MySql\Syrx.Commanders.Databases.Connectors.MySql.csproj" />
+	</ItemGroup>
+		
+	<ItemGroup>
+	  <PackageReference Update="DotNet.ReproducibleBuilds" Version="1.2.39" />
 	</ItemGroup>
 
 </Project>

@@ -1,0 +1,32 @@
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: syrx-mysql-tests
+    environment:
+      MYSQL_DATABASE: syrx
+      MYSQL_USER: syrx_user
+      MYSQL_PASSWORD: YourStrong!Passw0rd
+      MYSQL_ROOT_PASSWORD: YourStrong!Passw0rd
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pYourStrong!Passw0rd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - syrx-test-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  syrx-test-network:
+    driver: bridge

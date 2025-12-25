@@ -1,69 +1,54 @@
-﻿using DotNet.Testcontainers.Builders;
+﻿using MySqlConnector;
+using Dapper;
 
 namespace Syrx.MySql.Tests.Integration
 {
     public class MySqlFixture : Fixture, IAsyncLifetime
     {
-        private readonly MySqlContainer _container;
+        private string _connectionString;
+        private readonly bool _useWorkflowManagedMySQL;
 
+        /// <summary>
+        /// Initializes MySQL test fixture.
+        /// Uses workflow-managed MySQL service in CI, falls back to local MySQL for development.
+        /// </summary>
         public MySqlFixture()
         {
-            var _logger = LoggerFactory.Create(b => b
-                .AddConsole()
-                .AddSystemdConsole()
-                .AddSimpleConsole()).CreateLogger<MySqlFixture>();
-
-            _container = new MySqlBuilder()
-    //.WithImage("mysql:8.0")
-    .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(3306))
-    .WithReuse(true)
-    .WithLogger(_logger)
-    .WithStartupCallback((container, token) =>
-    {
-        var message = @$"{new string('=', 150)}
-Syrx: {nameof(MySqlContainer)} startup callback. Container details:
-{new string('=', 150)}
-Name ............. : {container.Name}
-Id ............... : {container.Id}
-State ............ : {container.State}
-Health ........... : {container.Health}
-CreatedTime ...... : {container.CreatedTime}
-StartedTime ...... : {container.StartedTime}
-Hostname ......... : {container.Hostname}
-Image.Digest ..... : {container.Image.Digest}
-Image.FullName ... : {container.Image.FullName}
-Image.Registry ... : {container.Image.Registry}
-Image.Repository . : {container.Image.Repository}
-Image.Tag ........ : {container.Image.Tag}
-IpAddress ........ : {container.IpAddress}
-MacAddress ....... : {container.MacAddress}
-ConnectionString . : {container.GetConnectionString()}
-{new string('=', 150)}
-";
-        container.Logger.LogInformation(message);
-        return Task.CompletedTask;
-    }).Build();
-
-
-            // start
-            _container.StartAsync().Wait();
+            // Check if we're running in GitHub Actions with a managed MySQL service
+            _useWorkflowManagedMySQL = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
+            
+            if (_useWorkflowManagedMySQL)
+            {
+                // Use the workflow-managed MySQL service
+                _connectionString = "Server=127.0.0.1;Port=3306;Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
+                Console.WriteLine("Using workflow-managed MySQL service");
+            }
+            else
+            {
+                // For local development, you'll need a local MySQL instance
+                _connectionString = "Server=localhost;Port=3306;Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
+                Console.WriteLine("Using local MySQL instance for development");
+            }
         }
 
         public async Task DisposeAsync()
         {
-            await Task.Run(() => Console.WriteLine("Done"));
+            // Nothing to dispose - workflow manages the MySQL service
+            await Task.CompletedTask;
         }
 
         public async Task InitializeAsync()
         {
-            // line up
-            var connectionString = $"{_container.GetConnectionString()};Allow User Variables=true";
-            var alias = "Syrx.Sql";
+            Console.WriteLine($"Connection string: {_connectionString}");
+            
+            // Wait for MySQL to be fully ready with connection verification
+            Console.WriteLine("Starting connection verification...");
+            await WaitForMySqlReadyAsync();
+            Console.WriteLine("MySQL is ready!");
+            
+            var alias = "Syrx.MySql";
 
-            var provider = Installer.Install(alias, connectionString);
-
-            // call Install() on the base type. 
-            Install(() => Installer.Install(alias, connectionString));
+            Install(() => Installer.Install(alias, _connectionString));
             Installer.SetupDatabase(base.ResolveCommander<DatabaseBuilder>());
 
             // set assertion messages for those that change between RDBMS implementations. 
@@ -80,6 +65,42 @@ ConnectionString . : {container.GetConnectionString()}
 
 
             await Task.CompletedTask;
+        }
+
+        private async Task WaitForMySqlReadyAsync()
+        {
+            // Shorter delay since workflow handles MySQL readiness
+            if (_useWorkflowManagedMySQL)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5)); // Workflow should have MySQL ready
+            }
+            else
+            {
+                await Task.Delay(TimeSpan.FromSeconds(15)); // Local dev might need more time
+            }
+            
+            var maxAttempts = _useWorkflowManagedMySQL ? 30 : 120; // Less attempts needed for workflow-managed
+            var delayBetweenAttempts = TimeSpan.FromSeconds(5);
+            
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    Console.WriteLine($"Connection attempt {attempt}/{maxAttempts}...");
+                    using var connection = new MySqlConnection(_connectionString);
+                    await connection.OpenAsync();
+                    await connection.ExecuteScalarAsync("SELECT 1");
+                    Console.WriteLine($"Connection successful on attempt {attempt}");
+                    return; // Connection successful
+                }
+                catch (Exception ex) when (attempt < maxAttempts)
+                {
+                    Console.WriteLine($"Connection attempt {attempt} failed: {ex.Message}");
+                    await Task.Delay(delayBetweenAttempts);
+                }
+            }
+            
+            throw new InvalidOperationException("MySQL container did not become ready within the expected time.");
         }
 
     }
