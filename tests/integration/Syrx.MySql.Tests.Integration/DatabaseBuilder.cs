@@ -84,16 +84,7 @@
 
         public DatabaseBuilder Populate()
         {
-            for (var i = 1; i < 151; i++)
-            {
-                var entry = new {
-                    Name = $"entry {i}",
-                    Value = i * 10,
-                    Modified = DateTime.Today
-                };
-
-                _commander.Execute(entry);
-            }
+            _commander.Execute<bool>();
 
             return this;
         }

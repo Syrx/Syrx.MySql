@@ -56,3 +56,10 @@ Temporary Items
 **/obj
 **/bin
 /.NCrunch_Syrx*/*
+
+# Build/test diagnostic logs
+*.log
+
+# Test run artifacts
+**/TestResults/
+**.dmp

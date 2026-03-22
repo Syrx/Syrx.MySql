@@ -104,7 +104,18 @@ END;
 
             public const string ClearTable = @"usp_clear_table";
 
-            public const string Populate = @"INSERT INTO poco (Name, Value, Modified) VALUES (@Name, @Value, @Modified)";
+            public const string Populate = @"
+INSERT INTO poco (`Name`, `Value`, `Modified`)
+WITH RECURSIVE sequence AS (
+    SELECT 1 AS n
+    UNION ALL
+    SELECT n + 1
+    FROM sequence
+    WHERE n < 150
+)
+SELECT CONCAT('entry ', n), n * 10, CURRENT_DATE()
+FROM sequence;
+";
 
         }
 

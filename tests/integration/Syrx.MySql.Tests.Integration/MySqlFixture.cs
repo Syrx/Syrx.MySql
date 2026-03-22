@@ -1,54 +1,76 @@
-﻿using MySqlConnector;
-using Dapper;
+´╗┐using DotNet.Testcontainers.Builders;
 
 namespace Syrx.MySql.Tests.Integration
 {
     public class MySqlFixture : Fixture, IAsyncLifetime
     {
-        private string _connectionString;
-        private readonly bool _useWorkflowManagedMySQL;
+        private const string MySqlImage = "mysql:8.0";
+        private static readonly TimeSpan ContainerStartupTimeout = TimeSpan.FromMinutes(2);
+        private static readonly TimeSpan DatabaseReadyTimeout = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan DatabaseReadyPollInterval = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan DatabaseConnectionTimeout = TimeSpan.FromSeconds(2);
+        private static readonly bool EnableContainerReuse =
+            string.Equals(Environment.GetEnvironmentVariable("SYRX_MYSQL_TESTCONTAINER_REUSE"), "true", StringComparison.OrdinalIgnoreCase);
 
-        /// <summary>
-        /// Initializes MySQL test fixture.
-        /// Uses workflow-managed MySQL service in CI, falls back to local MySQL for development.
-        /// </summary>
+        private readonly MySqlContainer _container;
+
         public MySqlFixture()
         {
-            // Check if we're running in GitHub Actions with a managed MySQL service
-            _useWorkflowManagedMySQL = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
-            
-            if (_useWorkflowManagedMySQL)
-            {
-                // Use the workflow-managed MySQL service
-                _connectionString = "Server=127.0.0.1;Port=3306;Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
-                Console.WriteLine("Using workflow-managed MySQL service");
-            }
-            else
-            {
-                // For local development, you'll need a local MySQL instance
-                _connectionString = "Server=localhost;Port=3306;Database=syrx;Uid=syrx_user;Pwd=YourStrong!Passw0rd;Allow User Variables=true";
-                Console.WriteLine("Using local MySQL instance for development");
-            }
+            var _logger = LoggerFactory.Create(b => b
+                .AddConsole()
+                .AddSystemdConsole()
+                .AddSimpleConsole()).CreateLogger<MySqlFixture>();
+
+            _container = new MySqlBuilder(MySqlImage)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilExternalTcpPortIsAvailable(MySqlBuilder.MySqlPort))
+            .WithReuse(EnableContainerReuse)
+    .WithLogger(_logger)
+    .WithStartupCallback((container, token) =>
+    {
+        var message = @$"{new string('=', 150)}
+Syrx: {nameof(MySqlContainer)} startup callback. Container details:
+{new string('=', 150)}
+Name ............. : {container.Name}
+Id ............... : {container.Id}
+State ............ : {container.State}
+Health ........... : {container.Health}
+CreatedTime ...... : {container.CreatedTime}
+StartedTime ...... : {container.StartedTime}
+Hostname ......... : {container.Hostname}
+Image.Digest ..... : {container.Image.Digest}
+Image.FullName ... : {container.Image.FullName}
+Image.Registry ... : {container.Image.Registry}
+Image.Repository . : {container.Image.Repository}
+Image.Tag ........ : {container.Image.Tag}
+IpAddress ........ : {container.IpAddress}
+MacAddress ....... : {container.MacAddress}
+{new string('=', 150)}
+";
+        container.Logger.LogInformation(message);
+        return Task.CompletedTask;
+    }).Build();
         }
 
         public async Task DisposeAsync()
         {
-            // Nothing to dispose - workflow manages the MySQL service
-            await Task.CompletedTask;
+            await _container.DisposeAsync();
         }
 
         public async Task InitializeAsync()
         {
-            Console.WriteLine($"Connection string: {_connectionString}");
-            
-            // Wait for MySQL to be fully ready with connection verification
-            Console.WriteLine("Starting connection verification...");
-            await WaitForMySqlReadyAsync();
-            Console.WriteLine("MySQL is ready!");
-            
-            var alias = "Syrx.MySql";
+            using var startupTokenSource = new CancellationTokenSource(ContainerStartupTimeout);
+            await _container.StartAsync(startupTokenSource.Token);
 
-            Install(() => Installer.Install(alias, _connectionString));
+            // line up
+            // Integration tests run against ephemeral local containers, so TLS is explicitly disabled here.
+            // Do not copy this setting into production connection strings.
+            var connectionString = $"{_container.GetConnectionString()};Allow User Variables=true;SslMode=None;Connection Timeout={(int)DatabaseConnectionTimeout.TotalSeconds}";
+            var alias = "Syrx.Sql";
+
+            await WaitForDatabaseReadyAsync(connectionString, CancellationToken.None);
+
+            // call Install() on the base type. 
+            Install(() => Installer.Install(alias, connectionString));
             Installer.SetupDatabase(base.ResolveCommander<DatabaseBuilder>());
 
             // set assertion messages for those that change between RDBMS implementations. 
@@ -62,45 +84,35 @@ namespace Syrx.MySql.Tests.Integration
 
             AssertionMessages.Add<Query>(nameof(Query.ExceptionsAreReturnedToCaller), "Division by zero error");
             AssertionMessages.Add<QueryAsync>(nameof(QueryAsync.ExceptionsAreReturnedToCaller), "Division by zero error");
-
-
-            await Task.CompletedTask;
         }
 
-        private async Task WaitForMySqlReadyAsync()
+        private static async Task WaitForDatabaseReadyAsync(string connectionString, CancellationToken cancellationToken)
         {
-            // Shorter delay since workflow handles MySQL readiness
-            if (_useWorkflowManagedMySQL)
+            var startedAt = DateTime.UtcNow;
+            Exception lastError = null;
+
+            while (DateTime.UtcNow - startedAt < DatabaseReadyTimeout)
             {
-                await Task.Delay(TimeSpan.FromSeconds(5)); // Workflow should have MySQL ready
-            }
-            else
-            {
-                await Task.Delay(TimeSpan.FromSeconds(15)); // Local dev might need more time
-            }
-            
-            var maxAttempts = _useWorkflowManagedMySQL ? 30 : 120; // Less attempts needed for workflow-managed
-            var delayBetweenAttempts = TimeSpan.FromSeconds(5);
-            
-            for (int attempt = 1; attempt <= maxAttempts; attempt++)
-            {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
-                    Console.WriteLine($"Connection attempt {attempt}/{maxAttempts}...");
-                    using var connection = new MySqlConnection(_connectionString);
-                    await connection.OpenAsync();
-                    await connection.ExecuteScalarAsync("SELECT 1");
-                    Console.WriteLine($"Connection successful on attempt {attempt}");
-                    return; // Connection successful
+                    await using var connection = new MySqlConnector.MySqlConnection(connectionString);
+                    await connection.OpenAsync(cancellationToken);
+                    await connection.CloseAsync();
+                    return;
                 }
-                catch (Exception ex) when (attempt < maxAttempts)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Connection attempt {attempt} failed: {ex.Message}");
-                    await Task.Delay(delayBetweenAttempts);
+                    lastError = ex;
                 }
+
+                await Task.Delay(DatabaseReadyPollInterval, cancellationToken);
             }
-            
-            throw new InvalidOperationException("MySQL container did not become ready within the expected time.");
+
+            throw new TimeoutException(
+                $"MySQL container did not accept client connections within {DatabaseReadyTimeout}.",
+                lastError);
         }
 
     }

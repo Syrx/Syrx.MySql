@@ -1,52 +1,102 @@
 # Syrx.MySql
 
-This project provides Syrx support for MySql. The overall experience of using [Syrx](https://github.com/Syrx/Syrx) remains the same. The only difference should be during dependency registration. 
+Syrx.MySql adds MySQL support to the Syrx data-access stack while preserving the same explicit-command and `ICommander<TRepository>` programming model used across the wider Syrx ecosystem.
 
-## Table of Contents
+## Overview
 
-- [Installation](#installation)
-- [Extensions](#extensions)
-- [Credits](#credits) 
+- Target framework: .NET 10
+- Current package version: 3.0.0
+- Primary dependency: MySqlConnector
+- Recommended entry point: `Syrx.MySql.Extensions`
 
+## Packages
 
-## Installation 
+| Package | Purpose |
+|--|--|
+| `Syrx.Commanders.Databases.Connectors.MySql` | Low-level MySQL database connector implementation. |
+| `Syrx.Commanders.Databases.Connectors.MySql.Extensions` | Dependency injection extensions for registering the connector. |
+| `Syrx.MySql` | Aggregates the core MySQL support packages. |
+| `Syrx.MySql.Extensions` | Recommended package for most consumers; combines Syrx and MySQL registration helpers. |
+
+## Installation
+
 > [!TIP]
-> We recommend installing the Extensions package which includes extension methods for easier configuration. 
+> Most applications should install `Syrx.MySql.Extensions` so MySQL support can be added through a single registration call.
 
-|Source|Command|
+### Recommended package
+
+| Source | Command |
 |--|--|
-|.NET CLI|```dotnet add package Syrx.MySql.Extensions```
-|Package Manager|```Install-Package Syrx.MySql.Extensions```
-|Package Reference|```<PackageReference Include="Syrx.MySql.Extensions" Version="3.0.0" />```|
-|Paket CLI|```paket add Syrx.MySql.Extensions --version 3.0.0```|
+| .NET CLI | `dotnet add package Syrx.MySql.Extensions --version 3.0.0` |
+| Package Manager | `Install-Package Syrx.MySql.Extensions -Version 3.0.0` |
+| Package Reference | `<PackageReference Include="Syrx.MySql.Extensions" Version="3.0.0" />` |
+| Paket CLI | `paket add Syrx.MySql.Extensions --version 3.0.0` |
 
-However, if you don't need the configuration options, you can install the standalone package via [nuget](https://www.nuget.org/packages/Syrx.MySql/).  
+### Core package only
 
-|Source|Command|
+If you only need the package graph without the higher-level registration helpers, install `Syrx.MySql`.
+
+| Source | Command |
 |--|--|
-|.NET CLI|```dotnet add package Syrx.MySql```
-|Package Manager|```Install-Package Syrx.MySql```
-|Package Reference|```<PackageReference Include="Syrx.MySql" Version="3.0.0" />```|
-|Paket CLI|```paket add Syrx.MySql --version 3.0.0```|
-## Extensions
-The `Syrx.MySql.Extensions` package provides dependency injection support via extension methods. 
+| .NET CLI | `dotnet add package Syrx.MySql --version 3.0.0` |
+| Package Manager | `Install-Package Syrx.MySql -Version 3.0.0` |
+| Package Reference | `<PackageReference Include="Syrx.MySql" Version="3.0.0" />` |
+| Paket CLI | `paket add Syrx.MySql --version 3.0.0` |
+
+## Usage
 
 ```csharp
-// add a using statement to the top of the file or in a global usings file.
 using Syrx.Commanders.Databases.Connectors.MySql.Extensions;
 
 public static IServiceCollection Install(this IServiceCollection services)
 {
-    return services
-        .UseSyrx(factory => factory         // inject Syrx
-        .UseMySql(builder => builder        // using the MySql implementation
-            .AddConnectionString(/*...*/)   // add/resolve connection string details 
-            .AddCommand(/*...*/)            // add/resolve commands for each type/method
-            )
-        );
+    return services.UseSyrx(builder =>
+        builder.UseMySql(settings => settings
+            .AddConnectionString("Default", "Server=localhost;Database=app;User ID=user;Password=password;")
+            .AddCommand(commandNamespace =>
+            {
+                // Register explicit Syrx command definitions for each repository method.
+            })));
 }
 ```
 
+## Repository structure
+
+The repository keeps the solution split into focused packages:
+
+- `src/Syrx.Commanders.Databases.Connectors.MySql`: connector implementation
+- `src/Syrx.Commanders.Databases.Connectors.MySql.Extensions`: DI registration helpers
+- `src/Syrx.MySql`: package aggregation for the core MySQL experience
+- `src/Syrx.MySql.Extensions`: package aggregation for the recommended registration experience
+- `tests/unit`: unit coverage for connector and extension wiring
+- `tests/integration`: integration coverage against ephemeral MySQL instances
+
+## Build and test
+
+```powershell
+dotnet build Syrx.MySql.sln --configuration Release
+dotnet test Syrx.MySql.sln --configuration Release
+```
+
+Integration tests use Testcontainers-based MySQL coverage and require Docker-compatible container execution on the host machine.
+
+For local containerized integration tests only, the fixture uses a test-scoped connection string with `SslMode=None`. This is intentionally non-production and should not be reused for deployed environments.
+
+## Release publishing approvals
+
+The publish workflow deploy job targets the `production` GitHub Actions environment.
+
+- Configure required reviewers on the `production` environment so release publication is explicitly approved before execution.
+- Store `NUGET_API_KEY` as an environment-scoped secret on `production` instead of as a repository-wide secret.
+- Release publishing should proceed only after required environment approvals are granted.
+
+## Documentation
+
+- Public API XML documentation is tracked with `scripts/Get-DocumentationMetrics.ps1`.
+- Project-level package notes live alongside each `src` project in a local `README.md`.
+- Security and performance research reports are generated under `.docs/research`.
+
 ## Credits
-Syrx is inspired by and build on top of [Dapper](https://github.com/DapperLib/Dapper).    
-MySql support is provided by [MySqlConnector](https://github.com/mysql-net/MySqlConnector).
+
+Syrx builds on the command-oriented data access model provided by [Syrx](https://github.com/Syrx/Syrx) and is inspired by [Dapper](https://github.com/DapperLib/Dapper).
+MySQL connectivity is provided by [MySqlConnector](https://github.com/mysql-net/MySqlConnector).

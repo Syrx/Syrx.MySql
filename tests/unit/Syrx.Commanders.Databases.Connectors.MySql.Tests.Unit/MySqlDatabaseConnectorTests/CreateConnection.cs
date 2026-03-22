@@ -11,8 +11,11 @@ namespace Syrx.Commanders.Databases.Connectors.MySql.Tests.Unit.MySqlDatabaseCon
         private readonly IDatabaseConnector _connector;
         public CreateConnection()
         {
+            var username = $"test_user_{Guid.NewGuid():N}";
+            var password = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
             _settings = CommanderSettingsBuilderExtensions.Build(
-                a => a.AddConnectionString("test.alias", "Host=localhost;Port=5432;Database=syrx;Username=postgres;Password=syrxforpostgres;")
+                a => a.AddConnectionString("test.alias", $"Host=localhost;Port=3306;Database=syrx;Username={username};Password={password};")
                 .AddCommand(
                     b => b.ForType<CreateConnection>(
                     c => c.ForMethod(nameof(Successfully),
