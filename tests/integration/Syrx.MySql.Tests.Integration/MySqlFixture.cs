@@ -13,9 +13,8 @@ namespace Syrx.MySql.Tests.Integration
                 .AddSystemdConsole()
                 .AddSimpleConsole()).CreateLogger<MySqlFixture>();
 
-            _container = new MySqlBuilder()
-    //.WithImage("mysql:8.0")
-    .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(3306))
+                _container = new MySqlBuilder("mysql:8.0")
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilInternalTcpPortIsAvailable(3306))
     .WithReuse(true)
     .WithLogger(_logger)
     .WithStartupCallback((container, token) =>
